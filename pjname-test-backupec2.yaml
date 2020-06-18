@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  SystemName:
+    Description: system name
+    Type: String
+    Default: pjname
+  PhaseName:
+    Description: Phase
+    Type: String
+    Default: test
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+Resources:
+  BackupPlanWithThinBackups:
+    Type: "AWS::Backup::BackupPlan"
+    Properties:
+      BackupPlan:
+        BackupPlanName: "BackupPlanWithThinBackups"
+        BackupPlanRule:
+          -
+            RuleName: "RuleForDailyBackups"
+            TargetBackupVault: Default
+            ScheduleExpression: "cron(0 15 ? * * *)"
+            Lifecycle:
+              DeleteAfterDays: 3
+  TagBasedBackupSelection:
+    Type: "AWS::Backup::BackupSelection"
+    Properties:
+      BackupSelection:
+        SelectionName: "TagBasedBackupSelection"
+        IamRoleArn:
+          Fn::ImportValue:
+            !Sub ${SystemName}-${PhaseName}-backuprole
+        ListOfTags:
+         -
+           ConditionType: "STRINGEQUALS"
+           ConditionKey: "BackupTarget"
+           ConditionValue: "ON"
+      BackupPlanId: !Ref BackupPlanWithThinBackups
+    DependsOn: BackupPlanWithThinBackups

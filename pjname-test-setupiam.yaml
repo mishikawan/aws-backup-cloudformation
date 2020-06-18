@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  SystemName:
+    Description: system name
+    Type: String
+    Default: pjname
+  PhaseName:
+    Description: Phase
+    Type: String
+    Default: test
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+Resources:
+  IAMRoleBkup:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      RoleName: "BackupEc2RoleName"
+      AssumeRolePolicyDocument: !Sub |
+        {
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": "sts:AssumeRole",
+                    "Principal": {
+                      "Service": "backup.amazonaws.com"
+                    }
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup
+        - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores
+      MaxSessionDuration: 3600
+Outputs:
+  LogsiteURL:
+    Value:
+      Fn::GetAtt:
+      - IAMRoleBkup
+      - Arn
+    Export:
+      Name: !Sub ${SystemName}-${PhaseName}-backuprole
+
