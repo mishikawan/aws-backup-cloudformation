@@ -24,8 +24,9 @@ Resources:
           -
             RuleName: "RuleForDailyBackups"
             TargetBackupVault: Default
-            ScheduleExpression: "cron(0 0 ? * * *)"
-            StartWindowMinutes: 120
+            ScheduleExpression: "cron(0 4 ? * * *)"
+            StartWindowMinutes: 60
+            CompletionWindowMinutes: 120
             Lifecycle:
               DeleteAfterDays: 3
   TagBasedBackupSelection:
